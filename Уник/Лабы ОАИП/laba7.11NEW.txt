@@ -1,0 +1,46 @@
+#include <iostream>
+#include <iomanip> // для функции setprecision()
+#include <cmath>
+
+using namespace std;
+
+double f(double x) {
+    return pow(x, 3) + 6 * pow(x, 2) - 0.02 * exp(x) - 14;
+}
+
+double mp(double a, double b, double eps) {
+    double c = b - (b - a) / 2.0;
+    while (abs(b - a) > eps) {
+        double u = c + (b - c) * f(a) / (f(a) - f(b));
+        if (f(u) * f(c) < 0) {
+            a = c;
+            b = u;
+        }
+        else {
+            a = u;
+            b = c;
+        }
+        c = b - (b - a) / 2.0;
+    }
+    return c;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    double a = -6, b = 2, eps = 0.0001;
+    double h = 0.5; // шаг для таблицы значений
+    cout << "Таблица значений функции на отрезке [" << a << ", " << b << "]" << endl;
+    cout << "x\tf(x)" << endl;
+    cout << setprecision(3) << fixed; // вывод значений с тремя знаками после запятой
+    for (double x = a; x <= b; x += h) {
+        cout << x << "\t" << f(x) << endl;
+    }
+
+    double x1 = mp(a, -3, eps);
+    double x2 = mp(-3, 0, eps);
+    double x3 = mp(0, b, eps);
+
+    cout << "\nКорни методом парабол: " << x1 << ", " << x2 << ", " << x3 << endl;
+
+    return 0;
+}

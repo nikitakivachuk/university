@@ -1,0 +1,186 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Node {       
+    int key;       
+    string data;       
+    Node* left;     
+    Node* right;    
+};
+
+Node* createNode(int key, string data) {    
+    Node* newNode = new Node();    
+    newNode->key = key;         
+    newNode->data = data;       
+    newNode->left = NULL;       
+    newNode->right = NULL;      
+
+    return newNode;
+}
+
+Node* insert(Node* root, int key, string data) {
+    if (root == NULL) {   
+        root = createNode(key, data);    
+        return root;
+    }
+
+    if (key < root->key)    
+        root->left = insert(root->left, key, data);    
+
+    else
+        root->right = insert(root->right, key, data);  
+
+    return root;
+}
+
+void inOrder(Node* root) {      
+    if (root != NULL) {       
+        inOrder(root->left);  
+        cout << "Key: " << root->key << ", Data: " << root->data << endl;     
+        inOrder(root->right);     
+    }
+}
+
+void preOrder(Node* root) {   
+    if (root != NULL) {      
+        cout << "Key: " << root->key << ", Data: " << root->data << endl;    
+        preOrder(root->left);   
+        preOrder(root->right);  
+    }
+}
+
+void postOrder(Node* root) {  
+    if (root != NULL) {       
+        postOrder(root->left);  
+        postOrder(root->right);   
+        cout << "Key: " << root->key << ", Data: " << root->data;  
+
+    }
+}
+
+Node* minValueNode(Node* node) {   
+    Node* current = node;       
+    while (current && current->left != NULL)   
+        current = current->left;      
+
+    return current;   
+}
+
+Node* deleteNode(Node* root, int key) {    
+    if (root == NULL)    
+        return root;
+
+    if (key < root->key)   
+        root->left = deleteNode(root->left, key);
+
+    else if (key > root->key)   
+        root->right = deleteNode(root->right, key);
+
+    else {
+        if (root->left == NULL) {       
+            Node* temp = root->right;   
+            free(root);     
+            return temp;   
+        }
+        else if (root->right == NULL) {     
+            Node* temp = root->left;      
+            free(root);    
+            return temp;    
+        }
+
+        Node* temp = minValueNode(root->right);  
+        root->key = temp->key;    
+        root->data = temp->data;
+        root->right = deleteNode(root->right, temp->key);    
+    }
+    return root;      
+}
+
+Node* search(Node* root, int key) {     
+    if (root == NULL || root->key == key)    
+        return root;      
+
+    if (root->key < key)      
+        return search(root->right, key);
+
+    return search(root->left, key);    
+}
+
+void printLevel(Node* root, int level) {    
+    if (root == NULL)      
+        return;
+    if (level == 1)    
+        cout << "Номер паспорта: " << root->key << ", ФИО: " << root->data << "     ";  
+    else if (level > 1) {     
+        printLevel(root->left, level - 1);   
+        printLevel(root->right, level - 1);   
+    }
+}
+
+int height(Node* node) {   
+    int lheight;     
+    int rheight;      
+    if (node == NULL)  
+        return 0;     
+    else {     
+        lheight = height(node->left);  
+        rheight = height(node->right);  
+    }
+    return (lheight > rheight) ? (lheight + 1) : (rheight + 1);     
+}
+
+
+void printLevelOrder(Node* root) {     
+    int h = height(root);     
+    for (int i = 1; i <= h; i++) {    
+        cout << "Уровень " << i << ": ";   
+        printLevel(root, i);   
+        cout << endl;
+    }
+}
+
+int countNodesWithPrefix(Node* root, char prefix) { 
+    if (root == NULL)                               
+        return 0;                                
+
+    int count = 0;                                  
+    if (!root->data.empty() && root->data[0] == prefix) 
+        count++;                               
+
+    count += countNodesWithPrefix(root->left, prefix);  
+    count += countNodesWithPrefix(root->right, prefix);
+
+    return count;  
+}
+
+int main() { 
+    setlocale(LC_ALL, "Russian");      
+    Node* root = NULL;     
+    int n;     
+    char c; 
+    cout << "Введите количество элементов: ";
+    cin >> n;
+
+    int key;      
+    string data;  
+    for (int i = 0; i < n; i++) {
+        cout << "Введите номер паспорта: ";
+        cin >> key;
+        cout << "Введите ФИО: ";
+        cin.ignore();      
+        getline(cin, data);
+
+        root = insert(root, key, data);     
+    }
+
+    inOrder(root);     
+
+    cout << "Введите символ: ";
+    cin >> c;
+    cout << "Количество записей в дереве начинающихся с буквы " << c << " " << countNodesWithPrefix(root, c) << endl;
+
+    printLevelOrder(root);
+
+    return 0;
+}

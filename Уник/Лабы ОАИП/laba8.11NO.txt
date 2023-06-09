@@ -1,0 +1,51 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+const int m = 5;
+const int n = 5;
+
+double f(double x) {
+    return pow(x, 3) + 6 * pow(x, 2) - 0.02 * exp(x);
+}
+
+double P(double x, double a, double b, int m, int n, double F[][6]) {
+    double h = (b - a) / m;
+    double t = (x - a) / h;
+    double result = F[n][n];
+    for (int i = n - 1; i >= 0; i--) {
+        result = result * (t - i) + F[i][i];
+    }
+    return result;
+}
+
+void approximate(double a, double b) {
+    double h = (b - a) / m;
+    double x[m + 1], y[m + 1];
+    for (int i = 0; i <= m; i++) {
+        x[i] = a + i * h;
+        y[i] = f(x[i]);
+    }
+    double F[m + 1][n + 1];
+    for (int i = 0; i <= m; i++) {
+        F[i][0] = y[i];
+    }
+    for (int j = 1; j <= n; j++) {
+        for (int i = j; i <= m; i++) {
+            F[i][j] = (F[i][j - 1] - F[i - 1][j - 1]) / (x[i] - x[i - j]);
+        }
+    }
+
+    cout << "Table:" << endl;
+    cout << "X\tY\tyApprox" << endl;
+    for (int i = 0; i <= m; i++) {
+        cout << x[i] << "\t" << y[i] << "\t" << P(x[i], a, b, m, n, F) << endl;
+    }
+}
+
+int main() {
+    double a = -5;
+    double b = 3;
+    approximate(a, b);
+}

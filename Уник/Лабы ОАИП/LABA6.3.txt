@@ -1,0 +1,195 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <iomanip>
+
+using namespace std;
+
+// Структура для хранения информации о студенте
+struct Student {
+    char name[50];
+    char group[10];
+    float avgGrade;
+    float incomePerMember;
+};
+
+void createFile(const char* fileName) {
+    FILE* fp = fopen(fileName, "wb");
+    if (fp == NULL) {
+        printf("Ошибка при создании файла!\n");
+        return;
+    }
+    fclose(fp);
+    printf("Файл успешно создан.\n");
+}
+
+void addStudentToFile(const char* fileName, const Student& student) {
+    FILE* fp = fopen(fileName, "a");
+    if (fp == NULL) {
+        printf("Ошибка при открытии файла!\n");
+        return;
+    }
+    fprintf(fp, "%s %s %f %f\n", student.name, student.group, student.avgGrade, student.incomePerMember);
+    fclose(fp);
+    printf("Студент успешно добавлен в файл.\n");
+}
+
+void viewFile(const char* fileName) {
+    FILE* fp;
+    struct Student student;
+    fp = fopen(fileName, "r");
+    if (fp == NULL) {
+        printf("Ошибка при открытии файла!\n");
+        return;
+    }
+    printf("ФИО\t\tГруппа\t\tСредний балл\tДоход на человека\n");
+    while (fscanf(fp, "%s %s %f %f", student.name, student.group, &student.avgGrade, &student.incomePerMember) == 4) {
+        printf("%s\t\t%s\t\t%.2f\t\t%.2f\n", student.name, student.group, student.avgGrade, student.incomePerMember);
+    }
+    fclose(fp);
+}
+
+
+
+int cmpStudent(const void* a, const void* b) {
+    struct Student* s1 = (struct Student*)a;
+    struct Student* s2 = (struct Student*)b;
+    if (s1->avgGrade > s2->avgGrade) return -1;
+    if (s1->avgGrade < s2->avgGrade) return 1;
+    return 0;
+}
+
+
+void printStudents(char* filename, float income) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening file\n");
+        return;
+    }
+
+    struct Student students[100];
+    int n = 0;
+
+    while (fscanf(file, "%s %s %f %f", students[n].name, students[n].group,
+        &students[n].avgGrade, &students[n].incomePerMember) == 4) {
+        n++;
+    }
+
+    fclose(file);
+
+    qsort(students, n, sizeof(struct Student), cmpStudent);
+
+    printf("Список студентов для поселения в общежитие:\n");
+    printf("ФИО\t\t\t\tГруппа\t\tСредний балл\tДоход на человека\n");
+
+    for (int i = 0; i < n; i++) {
+        if (students[i].incomePerMember < income) {
+            printf("%s\t\t%s\t\t%.1f\t%.1f\n", students[i].name,
+                students[i].group, students[i].avgGrade,
+                students[i].incomePerMember);
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (students[i].incomePerMember >= income) {
+            printf("%s\t\t%s\t\t%.1f\t%.1f\n", students[i].name,
+                students[i].group, students[i].avgGrade,
+                students[i].incomePerMember);
+        }
+    }
+}
+
+
+// Функция для поиска записи в файле по ключу
+void searchByKey(const char* filename, const float keyIncome) {
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf("Ошибка при открытии файла!\n");
+        return;
+    }
+
+    Student student;
+    bool found = false;
+
+    while (fscanf(fp, "%s %s %f %f\n", student.name, student.group, &student.avgGrade, &student.incomePerMember) == 4) {
+        if (student.incomePerMember == keyIncome) {
+            printf("ФИО: %s\nГруппа: %s\nСредний балл: %.2f\nДоход на человека: %.2f\n", student.name, student.group, student.avgGrade, student.incomePerMember);
+            found = true;
+        }
+    }
+
+    if (!found) {
+        printf("Нет студентов по данному ключу %.2f в файле %s\n", keyIncome, filename);
+    }
+
+    fclose(fp);
+}
+
+
+
+
+
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    int k;
+    bool NAME_IS_ENTER = false;
+    char* TEMP_fileNAME = new char [20];
+    float key;
+    float dohod;
+    while (true)
+    {
+        cout << "\nВыберите действие:\n1- Создать файл\n2- Просмотр файла\n3- Добавление студента\n4- Локальный поиск в файле\n";
+        cout << "5- Индивидуальное задание\n0- Выход\nВведите действие: ";
+        cin >> k;
+        switch (k)
+        {
+        case 1:
+            if (!NAME_IS_ENTER)
+            {
+                cout << "Введите название файла: ";
+                cin >> TEMP_fileNAME;
+                createFile(TEMP_fileNAME);
+                NAME_IS_ENTER = true;
+            }
+            else
+            cout << "\nФайл уже создан\n";
+            break;
+        case 2:
+            cout << "\nСодержимое файла:\n";
+            viewFile(TEMP_fileNAME);
+            break;
+        case 3:
+            Student NewStudent;
+            getchar();
+            cout << "\nДобавление студента:\nВведите ФИО: ";
+            fgets(NewStudent.name, sizeof(NewStudent.name), stdin);
+            cout << "Введите номер группы: ";
+            fgets(NewStudent.group, sizeof(NewStudent.group), stdin);
+            cout << "Введите средний балл: ";
+            cin >> NewStudent.avgGrade;
+            cout << "Введите доход на каждого члена семьи: ";
+            cin >> NewStudent.incomePerMember;
+            addStudentToFile(TEMP_fileNAME, NewStudent);
+            break;
+        case 4:
+            cout << "\nПоиск студента по ключу:\nВведите ключ:";
+            cin >> key;
+            searchByKey(TEMP_fileNAME, key);
+            break;
+        case 5:
+            cout << "\nВведите доход меньше двух минимальных зарплат: ";
+            cin >> dohod;
+            printStudents(TEMP_fileNAME, dohod);
+            break;
+        case 0:
+            return 0;
+            break;
+
+        default:
+            break;
+        }
+    }
+    return 0;
+}

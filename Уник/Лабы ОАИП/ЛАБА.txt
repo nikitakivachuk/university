@@ -1,0 +1,374 @@
+#include <iostream>
+#include <string>
+#include <locale>
+#include <iomanip>
+using namespace std;
+
+struct Node {
+    string text;
+    int key;
+    Node* left;
+    Node* right;
+    int height;
+    Node(string text, int key) : text(text), key(key), left(nullptr), right(nullptr), height(1) {}
+};
+
+
+Node* insert(Node* root, string text, int key) {
+    if (root == NULL) return new Node(text, key);
+    if (key < root->key)
+        root->left = insert(root->left, text, key);
+    else
+        root->right = insert(root->right, text, key);
+    return root;
+}
+
+int height(Node* node) {
+    return node == nullptr ? 0 : node->height;
+}
+
+Node* rotate_left(Node* node) {
+    Node* new_root = node->right;
+    node->right = new_root->left;
+    new_root->left = node;
+
+    node->height = max(height(node->left), height(node->right)) + 1;
+    new_root->height = max(height(new_root->left), height(new_root->right)) + 1;
+
+    return new_root;
+}
+
+Node* rotate_right(Node* node) {
+    Node* new_root = node->left;
+    node->left = new_root->right;
+    new_root->left = node;
+    node->height = max(height(node->left), height(node->right)) + 1;
+    new_root->height = max(height(new_root->left), height(new_root->right)) + 1;
+
+    return new_root;
+}
+
+Node* balance(Node* root) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    int balance_factor = height(root->left) - height(root->right);
+
+    if (balance_factor > 1) {
+        if (height(root->left->left) >= height(root->left->right)) {
+            root = rotate_right(root);
+        }
+        else {
+            root->left = rotate_left(root->left);
+            root = rotate_right(root);
+        }
+    }
+    else if (balance_factor < -1) {
+        if (height(root->right->right) >= height(root->right->left)) {
+            root = rotate_left(root);
+        }
+        else {
+            root->right = rotate_right(root->right);
+            root = rotate_left(root);
+        }
+    }
+
+    root->height = max(height(root->left), height(root->right)) + 1;
+
+    return root;
+}
+
+Node* balance_tree(Node* root) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+    root->left = balance_tree(root->left);
+    root->right = balance_tree(root->right);
+
+    return balance(root);
+}
+
+void print_preorder(Node* node) { //прямой обход
+    if (node == NULL) {
+        return;
+    }
+    std::cout << node->key << " " << node->text << std::endl;
+    print_preorder(node->left);
+    print_preorder(node->right);
+}
+
+void print_postorder(Node* node) { // обратный обход
+    if (node == nullptr) {
+        return;
+    }
+    print_postorder(node->left);
+    print_postorder(node->right);
+    std::cout << node->key << " " << node->text << std::endl;
+}
+
+int get_balance(Node* root) {
+    if (root == nullptr) {
+        return 0;
+    }
+
+    int left_height = (root->left == nullptr) ? 0 : root->left->height;
+    int right_height = (root->right == nullptr) ? 0 : root->right->height;
+
+    return left_height - right_height;
+}
+
+
+Node* delete_node(Node* root, int key) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    // Находим узел, который нужно удалить, и его родительский узел
+    Node* parent = nullptr;
+    Node* node = root;
+    while (node != nullptr && node->key != key) {
+        parent = node;
+        if (key < node->key) {
+            node = node->left;
+        }
+        else {
+            node = node->right;
+        }
+    }
+    if (node == nullptr) {
+        // Узел с заданным ключом не найден
+        return root;
+    }
+
+    // Удаление узла
+    if (node->left == nullptr && node->right == nullptr) {
+        // Узел без потомков
+        if (parent == nullptr) {
+            // Удаляем корень дерева
+            delete node;
+            return nullptr;
+        }
+        else if (parent->left == node) {
+            parent->left = nullptr;
+        }
+        else {
+            parent->right = nullptr;
+        }
+        delete node;
+    }
+    else if (node->left == nullptr || node->right == nullptr) {
+        // Узел с одним потомком
+        Node* child = node->left == nullptr ? node->right : node->left;
+        if (parent == nullptr) {
+            // Удаляем корень дерева
+            delete node;
+            return child;
+        }
+        else if (parent->left == node) {
+            parent->left = child;
+        }
+        else {
+            parent->right = child;
+        }
+        delete node;
+    }
+    else {
+        // Узел с двумя потомками
+        Node* min_node = node->right;
+        while (min_node->left != nullptr) {
+            min_node = min_node->left;
+        }
+        // Заменяем удаляемый узел на узел с минимальным ключом из правого поддерева
+        node->key = min_node->key;
+        node->text = min_node->text;
+        node->right = delete_node(node->right, min_node->key);
+    }
+
+    // Обновляем высоты узлов на пути от корня до узла, в котором было удаление
+    if (root != nullptr) {
+        int balance = get_balance(root);
+        if (balance > 1 && get_balance(root->left) >= 0) {
+            return rotate_right(root);
+        }
+        if (balance > 1 && get_balance(root->left) == 0) {
+            root = rotate_right(root);
+        }
+        else if (balance > 1 && get_balance(root->left) < 0) {
+            root->left = rotate_left(root->left);
+            root = rotate_right(root);
+        }
+        else if (balance < -1 && get_balance(root->right) <= 0) {
+            return rotate_left(root);
+        }
+        else if (balance < -1 && get_balance(root->right) > 0) {
+            root->right = rotate_right(root->right);
+            root = rotate_left(root);
+        }
+    }
+    return root;
+}
+
+
+Node* find_node(Node* root, int key) {
+    if (root == nullptr || root->key == key) {
+        // Если текущий узел пустой или имеет заданный ключ,
+        // то возвращаем его
+        return root;
+    }
+    else if (root->key < key) {
+        // Если заданный ключ больше, чем ключ текущего узла,
+        // то рекурсивно вызываем функцию для правого поддерева
+        return find_node(root->right, key);
+    }
+    else {
+        // Если заданный ключ меньше, чем ключ текущего узла,
+        // то рекурсивно вызываем функцию для левого поддерева
+        return find_node(root->left, key);
+    }
+}
+
+void delete_tree(Node* root) {
+    if (root == nullptr) {
+        return;
+    }
+    delete_tree(root->left);
+    delete_tree(root->right);
+    delete root;
+}
+
+
+void delete_subtree(Node* root, int key, Node* parent = nullptr) {
+    // Если дерево пустое, то ничего не делаем
+    if (root == nullptr) {
+        return;
+    }
+
+    // Если ключ находится в левом поддереве, то рекурсивно вызываем эту же функцию для левого поддерева
+    if (key < root->key) {
+        delete_subtree(root->left, key, root);
+        return;
+    }
+
+    // Если ключ находится в правом поддереве, то рекурсивно вызываем эту же функцию для правого поддерева
+    if (key > root->key) {
+        delete_subtree(root->right, key, root);
+        return;
+    }
+
+    // Если ключ совпал с ключом корня, то удаляем всё поддерево с корнем в текущей вершине
+    delete_tree(root);
+
+    // Удаляем указатель на текущую вершину у её родителя
+    if (parent != nullptr) {
+        if (key < parent->key) {
+            parent->left = nullptr;
+        }
+        else {
+            parent->right = nullptr;
+        }
+    }
+}
+
+
+
+
+void inorder(Node* root) {
+    if (root == NULL) return;
+    inorder(root->left);
+    cout << root->text << " " << root->key << endl;
+    inorder(root->right);
+}
+
+void print_tree(Node* node, int indent = 0) {
+    if (node != nullptr) {
+        if (node->right) {
+            print_tree(node->right, indent + 4);
+        }
+        if (indent) {
+            std::cout << std::setw(indent) << ' ';
+        }
+        if (node->right) std::cout << " /\n" << std::setw(indent) << ' ';
+        std::cout << node->key << "-" << node->text << "\n ";
+        if (node->left) {
+            std::cout << std::setw(indent) << ' ' << " \\\n";
+            print_tree(node->left, indent + 4);
+        }
+    }
+}
+
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    Node* root = NULL;
+    int k;
+    string TEMP_String = "";
+    int TEMP_Key;
+    Node* node;
+    cout << "Дерево создано.\n";
+    while (true)
+    {
+        cout << "\nВыберите действие:\n1-Добавить в дерево поиска новую запись\n2-По заданному ключу найти информацию\n3-Удалить из дерева поиска информацию по ключу\n";
+        cout << "4-Распечатать информацию прямым обходом\n5-Распечатать информацию обратным обходом\n6-Индивидуальное задание\n7-Графическое изображение дерева\n0-Выход\n";
+        cout << "Действие: ";
+        cin >> k;
+        cout << endl;
+        switch (k)
+        {
+        case 1:
+            cout << "Добавление в дерево поиска новой записи:\nВведите строку: ";
+            do
+            {
+                cin >> TEMP_String;
+            } while (TEMP_String == "");
+            cout << "Введите ключ: ";
+            cin >> TEMP_Key;
+            root = insert(root, TEMP_String, TEMP_Key);
+            cout << "Новая запись добавлена\n";
+            break;
+        case 2:
+            cout << "Поиск информации по ключу:\nВведите ключ: ";
+            cin >> TEMP_Key;
+            node = find_node(root, TEMP_Key);
+            if (node != nullptr) {
+                cout << "Информация найдена:\nКлюч: " << node->key << "\tТекст: " << node->text << "\n";
+            }
+            else
+                cout << "Информация по данному ключу не найдена\n";
+            break;
+        case 3:
+            cout << "Удаление из дерева информации по ключу:\nВведите ключ: ";
+            cin >> TEMP_Key;
+            delete_node(root, TEMP_Key);
+            cout << "Удаление успешно!\n";
+            break;
+        case 4:
+            cout << "Печать информации прямым обходом:\n";
+            print_preorder(root);
+            cout << "Печать завершена!\n";
+            break;
+        case 5:
+            cout << "Печать информации обратным обходом:\n";
+            print_postorder(root);
+            cout << "Печать завершена!\n";
+            break;
+        case 6:
+            cout << "Индивидуальное задание:\n3.Удалить из дерева ветвь с вершиной, имеющей заданный ключ\n";
+            cout << "Введите ключ: ";
+            cin >> TEMP_Key;
+            delete_subtree(root, TEMP_Key);
+            cout << "Удаление произведено успешно!\n";
+            break;
+        case 7:
+            print_tree(root);
+            break;
+        case 0:
+            delete_tree(root);
+            return 0;
+            break;
+        default:
+            break;
+        }
+    }
+    inorder(root);
+}

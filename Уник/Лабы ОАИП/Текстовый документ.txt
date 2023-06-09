@@ -1,0 +1,44 @@
+#include <iostream>
+
+using namespace std;
+
+struct Student {
+    string name;
+    int node1;
+    int node2;
+
+};
+
+void bubbleSortStudents(Student students[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (((students[j].node1 + students[j].node2) / 2.0) < ((students[j + 1].node1 + students[j + 1].node2) / 2.0)) {
+                swap(students[j], students[j + 1]);
+            }
+        }
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    int k;
+    cout << "Ввеедите размер массива: ";
+    cin >> k;
+    Student* stud = new Student[k];
+    for (int i = 0; i < k; i++)
+    {
+        cout << "Введите имя " << i + 1 << " студента: ";
+        cin >> stud[i].name;
+        cout << "Введите первую оценку: ";
+        cin >> stud[i].node1;
+        cout << "Введите вторую оценку: ";
+        cin >> stud[i].node2;
+    }
+    int N;
+    cout << "Введите N: ";
+    cin >> N;
+    bubbleSortStudents(stud, k);
+    for (int i = 0; i < N; i++) {
+        cout <<"Имя: "<< stud[i].name << " Средний балл:" << (stud[i].node1 +stud[i].node2)/2.0 << endl;
+    }
+}

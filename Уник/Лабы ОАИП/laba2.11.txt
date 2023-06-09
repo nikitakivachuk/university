@@ -1,0 +1,164 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+
+
+using namespace std;
+
+struct Student
+{
+    string FIO[2];
+    string addres;
+    int number;
+    int grades[5];
+    float MiddleGrade;
+};
+
+void resize(Student*& students, int currentSize, int newSize) {
+    Student* temp = new Student[newSize];
+    for (int i = 0; i < currentSize; i++) {
+        temp[i] = students[i];
+    }
+    delete[] students;
+    students = temp;
+}
+
+void Create(Student& st) {
+    cout << "Введите фамилию и инициалы: ";
+    cin >> st.FIO[0];
+    cin >> st.FIO[1];
+    cout << "Введите адрес: ";
+    cin >> st.addres;
+    cout << "Введите номер группы: ";
+    cin >> st.number;
+    cout << "Введите 5 оценок: ";
+    for (int i = 0; i < 5; i++)
+    {
+        cin >> st.grades[i];
+    }
+    st.MiddleGrade = (st.grades[0] + st.grades[1] + st.grades[2] + st.grades[3] + st.grades[4]) / 5.0;
+    cout << endl << endl;
+
+}
+
+void Watch(Student* st, int size) {
+    for (int i = 0; i < size; i++)
+    {
+        cout << "ФИО: " << st[i].FIO[0] << " " << st[i].FIO[1] << endl;
+        cout << "Адрес: " << st[i].addres << endl;
+        cout << "Номер группы: " << st[i].number << endl;
+        cout << "Оценки: " << st[i].grades[0] << " ";
+        for (int j = 1; j < 5; j++)
+        {
+            cout << st[i].grades[j] << " ";
+        }
+        cout << endl;
+        cout << "Средний балл: " << st[i].MiddleGrade << endl;
+        cout << "---------------------------------------------\n";
+    }
+}
+
+void Correct(Student* st, int size) {
+    cout << "--------------------------------------------\n";
+    cout << endl << "Меню редактирования:\n";
+    int k, num;
+    cout << "Укажите номер студента: ";
+    cin >> num;
+    cout << "\nВыберите действие:\n1 - Изменить ФИО\n2 - Изменить адрес\n3 - Изменить номер группы\n4 - Изменить оценки\n\nВведите цифру: ";
+    cin >> k;
+    switch (k)
+    {
+    case 1:
+        cout << "Введите ФИО:\n";
+        cin >> st[num - 1].FIO[0] >> st[num - 1].FIO[1];
+        cout << "Изменения занесены\n";
+        break;
+    case 2:
+        cout << "Введите адрес:\n";
+        getline(cin, st[num - 1].addres);
+        cout << "Изменения занесены\n";
+        break;
+    case 3:
+        cout << "Введите номер группы:\n";
+        cin >> st[num - 1].number;
+        cout << "Изменения занесены\n";
+        break;
+    case 4:
+        cout << "Введите 5 оценок:\n";
+        for (int i = 0; i < 5; i++)
+        {
+            cin >> st[num - 1].grades[0];
+        }
+        cout << "Изменения занесены\n";
+        break;
+
+    default:
+        break;
+    }
+}
+
+void Print(Student* st, int size) {
+    string number = "Minsk";
+    ofstream printFile("rez.txt");
+    vector <Student> stud;
+    for (int i = 0; i < size; i++)
+    {
+        if (st[i].addres == number && (st[i].MiddleGrade >= 8.5)) {
+            stud.push_back(st[i]);
+        }
+    }
+    for (int i = 0; i < stud.size(); i++) {
+
+        {
+            printFile << "ФИО: " << stud[i].FIO[0] << " " << stud[i].FIO[1] << endl;
+            printFile << "Год рождения: " << stud[i].addres << endl;
+            printFile << "Номер группы: " << stud[i].number << endl;
+            printFile << "Оценки: " << stud[i].grades[0] << " " << stud[i].grades[1] << " " << stud[i].grades[2] << " " << stud[i].grades[3] << " " << stud[i].grades[4] << endl;
+            printFile << "Средний балл: " << stud[i].MiddleGrade << endl;
+            printFile << "---------------------------------------------\n";
+        }
+    }
+    printFile.close();
+    cout << "\nДанные распечатаны\n";
+}
+int main() {
+    setlocale(LC_ALL, "Russian"); //русская локализация
+    bool flag = true;
+    int n;
+    int size = 0;
+    Student* students = new Student[1];
+    while (flag)
+    {
+        cout << "--------------------------------------------\n";
+        cout << "Выберите действие:\n1 - Создание\n2 - Просмотр\n3 - Коррекция\n4 - Индивидуальное задание\n0 - Выход\n\nВведите цифру: ";
+        cin >> n;
+        cout << "--------------------------------------------\n";
+        switch (n)
+        {
+        case 1:
+            size++;
+            resize(students, size - 1, size);
+            Create(students[size - 1]);
+            break;
+        case 2:
+            Watch(students, size);
+            break;
+        case 3:
+            Correct(students, size);
+            break;
+        case 4:
+            Print(students, size);
+            break;
+        case 0:
+            flag = false;
+            break;
+
+        default:
+            break;
+        }
+    }
+    delete[] students;
+
+    return 0;
+}

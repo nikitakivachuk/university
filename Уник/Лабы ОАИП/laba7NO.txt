@@ -1,0 +1,59 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+double f(double x) {
+    return pow(x, 3) + 6 * pow(x, 2) - 0.02 * exp(x) - 14;
+}
+
+void MP(double a, double b, double tol) {
+    double x1 = a;
+    double x2 = (a + b) / 2;
+    double x3 = b;
+    double f1 = f(x1);
+    double f2 = f(x2);
+    double f3 = f(x3);
+    while (abs(x3 - x1) > tol) {
+        double num = (x2 - x1) * (x2 - x1) * (f2 - f3) - (x2 - x3) * (x2 - x3) * (f2 - f1);
+        double den = (x2 - x1) * (f2 - f3) - (x2 - x3) * (f2 - f1);
+        double x4 = x2 - 0.5 * num / den;
+        double f4 = f(x4);
+        if (x4 < x2) {
+            if (f4 < f2) {
+                x3 = x2; f3 = f2;
+                x2 = x4; f2 = f4;
+            }
+            else {
+                x1 = x4; f1 = f4;
+            }
+        }
+        else {
+            if (f4 < f2) {
+                x1 = x2; f1 = f2;
+                x2 = x4; f2 = f4;
+            }
+            else {
+                x3 = x4; f3 = f4;
+            }
+        }
+    }
+    cout << "корень 1: " << x1 << endl;
+    cout << "корень 2: " << (x1 + x3) / 2 << endl;
+    cout << "корень 3: " << x3;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    double a, b, e;
+    cout << "Введите начало интервала(a): ";
+    cin >> a;
+    cout << "Введите конец интервала(b): ";
+    cin >> b;
+    cout << "Введите eps: ";
+    cin >> e;
+
+    MP(a, b, e);
+
+    return 0;
+}

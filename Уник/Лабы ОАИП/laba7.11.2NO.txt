@@ -1,0 +1,56 @@
+#include <iostream>
+#include <math.h>
+
+using namespace std;
+
+double f_x(double x) {
+	return pow(x,3)+6*pow(x,2)-0.02*exp(x);
+}
+
+double gauss_2(double a, double b) {
+	double I;
+	I = (b - a) * 1 / 2;
+	double x1, x2;
+	x1 = (b + a) / 2 - (b - a) / (2 * sqrt(3));
+	x2 = (b + a) / 2 + (b - a) / (2 * sqrt(3));
+	I = I * (f_x(x1) + f_x(x2));
+	return I;
+}
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	double a, b, I, h;
+	int m;
+	double eps;
+	I = 0;
+	cout << "a: ";
+	cin >> a;
+	cout << "b: ";
+	cin >> b;
+	int swit;
+	cout << "Выберите метод:\n1 - разбиение на n\n2 - точность eps\n";
+	cin >> swit;
+	if (swit == 1) {
+		cout << "Введите n = ";
+		cin >> m;
+		h = (b - a) / m;
+		for (double x = a; x <= b; x = x + (b - a) / m) {
+			I = I + gauss_2(x, x + h);
+		}
+	}
+	else
+	{
+		cout << "Введите точность eps = ";
+		cin >> eps;
+		m = 100;
+		double x = a;
+		while (b-x > eps)
+		{
+			h = (b - a) / m;
+			I = I + gauss_2(x, x + h);
+			x = x + (b - a) / m;
+		}
+	}
+	
+	cout << "integral:" << I;
+}

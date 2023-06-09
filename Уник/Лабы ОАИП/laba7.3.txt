@@ -1,0 +1,52 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+// Функция, для которой мы ищем корни
+double f(double x) {
+    return log(x) - 5 * cos(x);
+}
+
+// Функция для вычисления значения производной функции f(x)
+double f_prime(double x) {
+    return (f(x + 0.0001) - f(x)) / 0.0001;
+}
+
+// Функция для нахождения корней методом секущих
+void secantMethod(double a, double b, double epsilon) {
+    double x0 = a;
+    double x1 = b;
+    double x2;
+
+    while (abs(x1 - x0) > epsilon) {
+        x2 = x1 - (f(x1) * (x1 - x0)) / (f(x1) - f(x0));
+        x0 = x1;
+        x1 = x2;
+    }
+
+    cout << "Корень: " << x1 << endl;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    double a, b, epsilon;
+
+    cout << "Введите начало интервала a: ";
+    cin >> a;
+    cout << "Введите конец интервала b: ";
+    cin >> b;
+    cout << "Введите точность epsilon: ";
+    cin >> epsilon;
+
+    cout << "Корни функции f(x) = ln(x) - 5cos(x) на интервале [" << a << ", " << b << "]:" << endl;
+
+    // Проверяем каждый отрезок в интервале [a, b]
+    for (double x = a; x <= b; x += 0.1) {
+        if (f(x) * f(x + 0.1) < 0) {
+            secantMethod(x, x + 0.1, epsilon);
+        }
+    }
+
+    return 0;
+}

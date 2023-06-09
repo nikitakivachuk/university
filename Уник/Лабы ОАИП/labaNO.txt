@@ -1,0 +1,46 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+int MiddleNumber(int* mas, int N) {
+    double sum = 0;
+    for (int i = 0; i < N; i++) {
+        sum += mas[i];
+    }
+    return sum / N;
+}
+
+void findElementAndIndex(int* mas, int N, int& C, int* Y) {
+    double Middle = MiddleNumber(mas, N);
+    double minDiff = abs(mas[0] - Middle);
+    int index = 0;
+    for (int i = 1; i < N; i++) {
+        double diff = abs(mas[i] - Middle);
+        if (diff < minDiff) {
+            minDiff = diff;
+            index = i;
+        }
+    }
+    C = mas[index];
+    *Y = index;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    int N;
+    cout << "Введите размер массива: ";
+    cin >> N;
+    int* mas = new int[N];
+    cout << "Введите элементы массива: ";
+    for (int i = 0; i < N; i++) {
+        cin >> mas[i];
+    }
+    int C;
+    int Y;
+    findElementAndIndex(mas, N, C, &Y);
+    cout << "Значение элемента ближайшего к среднему: " << C << endl;
+    cout << "Индекс элемента: " << Y << endl;
+    delete[] mas;
+    return 0;
+}

@@ -1,0 +1,28 @@
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+double f(double x) {
+    return pow(x, 3) + 6 * pow(x, 2) - 0.02 * exp(x);
+}
+
+double gauss2(double a, double b) {
+    double x1 = (a + b - (b - a) / sqrt(3)) / 2;
+    double x2 = (a + b + (b - a) / sqrt(3)) / 2;
+    double w1 = 1;
+    double w2 = 1;
+    double I = ((b - a) / 2) * (w1 * f(x1) + w2 * f(x2));
+    return I;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    double a, b;
+    cout << "Введите пределы интегрирования: \n";
+    cout << "a = ";
+    cin >> a;
+    cout << "b = ";
+    cin >> b;
+    cout << "Значение интеграла: " << gauss2(a, b) << endl;
+    return 0;
+}
